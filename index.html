@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collaborative Robots in Car Manufacturing</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <aside class="panel">
+        <div>
+          <p class="eyebrow">Car Factory HRC</p>
+          <h1>Collaborative Robots in Manufacturing</h1>
+        </div>
+
+        <section class="controls" aria-label="Simulation controls">
+          <label>
+            Manufacturing stage
+            <select id="station">
+              <option value="overview">Full process overview</option>
+              <option value="press">1. Press Shop</option>
+              <option value="body">2. Body Shop / BIW</option>
+              <option value="closures">3. Closure Hanging</option>
+              <option value="paint">4. Paint Shop</option>
+              <option value="trim">5. Trim Line</option>
+              <option value="chassis">6. Chassis Marriage</option>
+              <option value="final">7. Final Assembly</option>
+              <option value="inspect">8. End-of-Line Inspection</option>
+            </select>
+          </label>
+
+          <label>
+            Human operator proximity
+            <input id="proximity" type="range" min="0" max="100" value="34" />
+          </label>
+
+          <label>
+            Line speed
+            <input id="speed" type="range" min="40" max="160" value="100" />
+          </label>
+
+          <label class="toggle">
+            <input id="showZones" type="checkbox" checked />
+            Show safety zones
+          </label>
+
+          <div class="buttonRow">
+            <button id="pauseBtn" type="button">Pause</button>
+            <button id="resetBtn" type="button">Reset</button>
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="Simulation metrics">
+          <div><span>Mode</span><strong id="mode">Collaborative</strong></div>
+          <div><span>Current task</span><strong id="task">Frame transfer</strong></div>
+          <div><span>Cycle time</span><strong id="cycle">0.0 s</strong></div>
+          <div><span>Cars completed</span><strong id="completed">0</strong></div>
+          <div><span>Robot utilization</span><strong id="util">0%</strong></div>
+          <div><span>Safety stops</span><strong id="stops">0</strong></div>
+        </section>
+
+        <p class="note">
+          The line now builds from stamped parts into body-in-white, paint, trim,
+          chassis marriage, final fit, and inspection. No completed car model is spawned.
+        </p>
+      </aside>
+
+      <section class="stage">
+        <canvas id="scene"></canvas>
+        <div class="stationTitle" id="stationTitle">Full process overview</div>
+        <div class="detailBox" id="detailBox" hidden>
+          <button id="detailsBtn" type="button" aria-expanded="false">Details</button>
+          <p id="detailsText" hidden></p>
+        </div>
+        <div class="legend">
+          <span><i class="robotA"></i>Cobot arm</span>
+          <span><i class="robotB"></i>Heavy robot</span>
+          <span><i class="human"></i>Human operator</span>
+          <span><i class="task"></i>Car body/product</span>
+          <span><i class="zone"></i>Safety zone</span>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./main.js?v=22"></script>
+  </body>
+</html>
