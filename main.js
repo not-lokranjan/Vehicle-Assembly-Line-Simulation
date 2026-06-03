@@ -18,6 +18,7 @@ const ui = {
   showZones: document.querySelector("#showZones"),
   showSensors: document.querySelector("#showSensors"),
   enableAi: document.querySelector("#enableAi"),
+  openConsole: document.querySelector("#openConsoleBtn"),
   pause: document.querySelector("#pauseBtn"),
   reset: document.querySelector("#resetBtn"),
   mode: document.querySelector("#mode"),
