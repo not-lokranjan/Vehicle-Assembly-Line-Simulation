@@ -19,7 +19,7 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr) 400px;
+  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -88,6 +88,15 @@ input[type="range"] {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.analyticsButton {
+  border-color: rgba(125, 211, 252, 0.5);
+  background: #1d2b35;
+  color: #dff5ff;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0;
 }
 
 button {
@@ -243,21 +252,24 @@ canvas {
 .sensorLegend { background: #8bd3ff; box-shadow: 0 0 10px rgba(139, 211, 255, 0.8); }
 
 .intelligenceConsole {
-  position: relative;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 20;
   display: grid;
   grid-template-columns: 1fr;
+  width: min(420px, 92vw);
+  height: 100vh;
   min-width: 0;
   background: #12161c;
   border-left: 1px solid #2d343b;
+  box-shadow: -22px 0 48px rgba(0, 0, 0, 0.46);
+  transform: translateX(100%);
   transition: width 180ms ease, transform 180ms ease;
 }
 
-.intelligenceConsole.collapsed {
-  width: 48px;
-}
-
-.intelligenceConsole.collapsed .consoleInner {
-  display: none;
+.intelligenceConsole.open {
+  transform: translateX(0);
 }
 
 .consoleToggle {
@@ -269,8 +281,13 @@ canvas {
   background: #18202a;
   color: #bde8ff;
   font-size: 11px;
-  text-align: left;
+  text-align: center;
   text-transform: uppercase;
+}
+
+.consoleToggle::before {
+  content: "Close · ";
+  color: #fca5a5;
 }
 
 .consoleInner {
@@ -533,48 +550,10 @@ canvas {
   }
 
   .intelligenceConsole {
-    position: fixed;
-    top: 0;
-    right: 0;
-    z-index: 10;
     width: min(400px, 92vw);
-    height: 100vh;
-    transform: translateX(calc(100% - 48px));
-    box-shadow: -18px 0 40px rgba(0, 0, 0, 0.35);
-  }
-
-  .intelligenceConsole.open {
-    transform: translateX(0);
-  }
-
-  .consoleToggle {
-    position: absolute;
-    left: -44px;
-    top: 84px;
-    width: 44px;
-    height: 190px;
-    padding: 8px 4px;
-    border-radius: 8px 0 0 8px;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    font-size: 10px;
   }
 
   .consoleInner {
     height: 100vh;
-  }
-}
-
-@media (min-width: 861px) {
-  .intelligenceConsole.collapsed {
-    min-width: 48px;
-  }
-
-  .intelligenceConsole.collapsed .consoleToggle {
-    height: 100vh;
-    border-radius: 0;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    font-size: 11px;
   }
 }
