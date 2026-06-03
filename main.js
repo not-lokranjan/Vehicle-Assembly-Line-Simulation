@@ -8,7 +8,7 @@ import {
   trackWorldPosition,
 } from "./robotFactory.js";
 import { makeFactory, makeSafetyZone, makeSparks, stationData, updateBodyTypeLabel } from "./factoryScene.js";
-import { initIntelligenceConsole } from "./intelligenceConsole.js?v=24";
+import { initIntelligenceConsole } from "./intelligenceConsole.js?v=25";
 
 const canvas = document.querySelector("#scene");
 const ui = {
