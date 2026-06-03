@@ -45,6 +45,16 @@
             Show safety zones
           </label>
 
+          <label class="toggle">
+            <input id="showSensors" type="checkbox" checked />
+            Show sensor nodes
+          </label>
+
+          <label class="toggle">
+            <input id="enableAi" type="checkbox" checked />
+            Enable AI optimization
+          </label>
+
           <div class="buttonRow">
             <button id="pauseBtn" type="button">Pause</button>
             <button id="resetBtn" type="button">Reset</button>
@@ -58,6 +68,13 @@
           <div><span>Cars completed</span><strong id="completed">0</strong></div>
           <div><span>Robot utilization</span><strong id="util">0%</strong></div>
           <div><span>Safety stops</span><strong id="stops">0</strong></div>
+        </section>
+
+        <section class="systemState" aria-label="Smart manufacturing system state">
+          <div><span>Digital Twin</span><strong id="twinState">SYNCHRONIZED</strong></div>
+          <div><span>Telemetry</span><strong>SIMULATED · 4 Hz</strong></div>
+          <div><span>Scheduler</span><strong id="schedulerState">AI-OPTIMIZED</strong></div>
+          <div><span>Maintenance</span><strong id="maintenanceState">MONITORING</strong></div>
         </section>
 
         <p class="note">
@@ -79,10 +96,34 @@
           <span><i class="human"></i>Human operator</span>
           <span><i class="task"></i>Car body/product</span>
           <span><i class="zone"></i>Safety zone</span>
+          <span><i class="sensorLegend"></i>Sensor node</span>
         </div>
       </section>
+
+      <aside class="intelligenceConsole" id="intelligenceConsole" aria-label="Smart Factory Intelligence Console">
+        <button class="consoleToggle" id="consoleToggle" type="button" aria-expanded="true">
+          <span>SMART FACTORY INTELLIGENCE CONSOLE</span>
+        </button>
+        <div class="consoleInner">
+          <div class="consoleHeader">
+            <p class="eyebrow">DIGITAL TWIN DEMO MODE</p>
+            <h2>Smart Factory Intelligence Console</h2>
+            <p class="consoleDisclaimer">
+              This browser prototype visualizes a smart-manufacturing architecture using simulated sensor streams, ROS 2-style topic mappings, AI-assisted scheduling logic, predictive-maintenance indicators, and model-based analytics. It is an illustrative digital twin demonstrator rather than a deployed factory system.
+            </p>
+          </div>
+          <div class="consoleTabs" role="tablist" aria-label="Intelligence console tabs">
+            <button type="button" data-tab="digitalTwin" class="active">Digital Twin</button>
+            <button type="button" data-tab="ros">ROS 2 / Isaac Sim</button>
+            <button type="button" data-tab="scheduler">AI Scheduler</button>
+            <button type="button" data-tab="maintenance">Maintenance</button>
+            <button type="button" data-tab="analytics">Analytics</button>
+          </div>
+          <div class="consoleContent" id="consoleContent"></div>
+        </div>
+      </aside>
     </main>
 
-    <script type="module" src="./main.js?v=22"></script>
+    <script type="module" src="./main.js?v=23"></script>
   </body>
 </html>
