@@ -8,6 +8,7 @@ import {
   trackWorldPosition,
 } from "./robotFactory.js";
 import { makeFactory, makeSafetyZone, makeSparks, stationData, updateBodyTypeLabel } from "./factoryScene.js";
+import { initIntelligenceConsole } from "./intelligenceConsole.js";
 
 const canvas = document.querySelector("#scene");
 const ui = {
@@ -15,6 +16,8 @@ const ui = {
   proximity: document.querySelector("#proximity"),
   speed: document.querySelector("#speed"),
   showZones: document.querySelector("#showZones"),
+  showSensors: document.querySelector("#showSensors"),
+  enableAi: document.querySelector("#enableAi"),
   pause: document.querySelector("#pauseBtn"),
   reset: document.querySelector("#resetBtn"),
   mode: document.querySelector("#mode"),
@@ -27,6 +30,9 @@ const ui = {
   detailBox: document.querySelector("#detailBox"),
   detailsBtn: document.querySelector("#detailsBtn"),
   detailsText: document.querySelector("#detailsText"),
+  twinState: document.querySelector("#twinState"),
+  schedulerState: document.querySelector("#schedulerState"),
+  maintenanceState: document.querySelector("#maintenanceState"),
 };
 
 const scene = new THREE.Scene();
@@ -95,6 +101,9 @@ const safetyZones = {
 };
 Object.values(safetyZones).forEach((zone) => scene.add(zone));
 
+const sensorBeacons = makeSensorBeacons();
+scene.add(sensorBeacons.root);
+
 const sparks = makeSparks(materials);
 sparks.position.set(-3.7, 1.22, -1.38);
 scene.add(sparks);
@@ -128,6 +137,12 @@ let overviewPhaseTime = 0;
 let overviewMoveFrom = 0;
 let overviewMoveTo = 1;
 let vehicleSequence = 0;
+let latestMode = { label: "Collaborative", scale: 1, stop: false };
+let latestCycle = { key: "press", index: 0, work: 0, x: -5.7, stopped: true };
+let latestDistance = 2.4;
+let latestLoad = 0;
+let latestCycleTimeSeconds = 88;
+let latestSensorStatuses = new Map();
 const carRideHeight = 0.38;
 const carPaintPalette = [0x2f7fbf, 0x1f9d72, 0xd14f45, 0xf2c14e, 0x8b5cf6, 0xe8eef2, 0x2f343c];
 let currentPaintColor = carPaintPalette[0];
@@ -156,6 +171,7 @@ ui.pause.addEventListener("click", () => {
 ui.reset.addEventListener("click", resetStats);
 ui.station.addEventListener("change", () => setStation(ui.station.value));
 ui.showZones.addEventListener("change", updateZoneVisibility);
+ui.showSensors.addEventListener("change", updateSensorVisibility);
 ui.detailsBtn.addEventListener("click", toggleDetails);
 canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 canvas.addEventListener("pointerdown", startPointerControl);
@@ -169,6 +185,13 @@ setStation("overview");
 camera.position.copy(desiredCamera);
 cameraTarget.copy(desiredTarget);
 camera.lookAt(cameraTarget);
+const intelligenceConsole = initIntelligenceConsole({
+  getSnapshot: getSimulationSnapshot,
+  ui,
+  onSensorStatus: (sensors) => {
+    latestSensorStatuses = new Map(sensors.map((sensor) => [sensor.id, sensor.status]));
+  },
+});
 resetStats();
 render();
 
@@ -223,6 +246,10 @@ function updateZoneVisibility() {
   });
 }
 
+function updateSensorVisibility() {
+  sensorBeacons.root.visible = ui.showSensors.checked;
+}
+
 function resetStats() {
   elapsed = 0;
   stops = 0;
@@ -237,6 +264,12 @@ function resetStats() {
   overviewMoveFrom = 0;
   overviewMoveTo = 1;
   userCameraOffset.set(0, 0, 0);
+  latestMode = { label: "Collaborative", scale: 1, stop: false };
+  latestCycle = { key: "press", index: 0, work: 0, x: -5.7, stopped: true };
+  latestDistance = 2.4;
+  latestLoad = 0;
+  latestCycleTimeSeconds = 88;
+  intelligenceConsole?.reset();
 }
 
 function modeFromHumanDistance(distance) {
@@ -492,7 +525,8 @@ function updateMetrics(mode, speedFactor, dt, load) {
     activeUtil += load * dt;
   }
   ui.mode.textContent = displayedStation === "overview" && mode.label === "Collaborative" ? "Conveyor stop-and-build" : mode.label;
-  ui.cycle.textContent = `${(88 / Math.max(0.22, speedFactor * Math.max(load, 0.2))).toFixed(0)} s`;
+  latestCycleTimeSeconds = 88 / Math.max(0.22, speedFactor * Math.max(load, 0.2));
+  ui.cycle.textContent = `${latestCycleTimeSeconds.toFixed(0)} s`;
   ui.completed.textContent = `${Math.floor(completedCars)}`;
   ui.util.textContent = `${Math.min(99, Math.round((activeUtil / Math.max(1, elapsed)) * 86))}%`;
   ui.stops.textContent = `${stops}`;
@@ -514,14 +548,110 @@ function render() {
     manualStationWork = Math.min(1, manualStationWork + Math.max(0.12, speedFactor * load) * dt / dwellSeconds);
   }
   const cycle = updateCar(speedFactor * load);
+  latestMode = mode;
+  latestCycle = cycle;
+  latestDistance = distance;
+  latestLoad = load;
   const activeKeys = displayedStation === "overview" ? [cycle.key] : [displayedStation];
   updateRobots(elapsed * speedFactor, load, activeKeys, cycle.work);
   updateEffects(load);
+  updateSensorBeacons(mode);
   updateCamera(dt);
   updateMetrics(mode, speedFactor, dt, load);
   updateZones(distance, mode);
 
   renderer.render(scene, camera);
+}
+
+function getSimulationSnapshot() {
+  const activeStation = displayedStation === "overview"
+    ? latestCycle.key === "reset" ? "press" : latestCycle.key
+    : displayedStation;
+  const utilization = Math.min(99, (activeUtil / Math.max(1, elapsed)) * 86);
+  return {
+    elapsedTime: elapsed,
+    isPaused: paused,
+    selectedStage: displayedStation,
+    selectedStageLabel: stationLabel(displayedStation),
+    activeStation,
+    activeStationLabel: stationLabel(activeStation),
+    lineSpeed: Number(ui.speed.value),
+    completedCars: Math.floor(completedCars),
+    completedCarsRaw: completedCars,
+    robotUtilization: utilization,
+    safetyStops: stops,
+    humanDistance: latestDistance,
+    safetyMode: latestMode.label,
+    currentTask: ui.task.textContent,
+    cycleProgress: Math.min(1, Math.max(0, latestCycle.work ?? 0)),
+    cycleTimeSeconds: latestCycleTimeSeconds,
+    vehicleType,
+    load: latestLoad,
+  };
+}
+
+function stationLabel(key) {
+  const labels = {
+    overview: "Full process overview",
+    press: "Press Shop",
+    body: "Body Shop / BIW",
+    closures: "Closure Hanging",
+    paint: "Paint Shop",
+    trim: "Trim Line",
+    chassis: "Chassis Marriage",
+    final: "Final Assembly",
+    inspect: "End-of-Line Inspection",
+    reset: "Line reset",
+  };
+  return labels[key] ?? key;
+}
+
+function makeSensorBeacons() {
+  const root = new THREE.Group();
+  root.name = "digital twin sensor beacons";
+  const normal = new THREE.MeshBasicMaterial({ color: 0x8bd3ff, transparent: true, opacity: 0.72 });
+  const definitions = [
+    ["press-vibration", "press", [-5.72, 0.92, 0.38]],
+    ["weld-temperature", "body", [-3.65, 1.22, -1.18]],
+    ["paint-temperature", "paint", [0.12, 1.38, 0.98]],
+    ["paint-humidity", "paint", [0.52, 1.38, 0.98]],
+    ["chassis-load", "chassis", [4.12, 0.72, -2.48]],
+    ["inspection-defect-risk", "inspect", [7.84, 1.48, -1.15]],
+    ["operator-proximity", "global", [-1.05, 0.9, 0.88]],
+  ];
+  const nodes = {};
+  definitions.forEach(([id, station, position]) => {
+    const group = new THREE.Group();
+    group.name = `${id} sensor node`;
+    group.position.set(...position);
+    const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.07, 18, 14), normal.clone());
+    const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.38, 10), new THREE.MeshBasicMaterial({ color: 0x7b8794 }));
+    mast.position.y = -0.22;
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.09, 0.12, 24), normal.clone());
+    ring.rotation.x = Math.PI / 2;
+    group.add(mast, beacon, ring);
+    group.userData = { id, station, beacon, ring, baseScale: group.scale.clone() };
+    root.add(group);
+    nodes[id] = group;
+  });
+  return { root, nodes };
+}
+
+function updateSensorBeacons(mode) {
+  const time = elapsed;
+  sensorBeacons.root.visible = ui.showSensors.checked;
+  Object.values(sensorBeacons.nodes).forEach((node) => {
+    const status = latestSensorStatuses.get(node.userData.id) ?? "NORMAL";
+    const active = node.userData.station === "global" || displayedStation === "overview" || node.userData.station === displayedStation || node.userData.station === latestCycle.key;
+    const color = status === "STOP" ? 0xff6b6b : status === "WARNING" ? 0xf97316 : status === "WATCH" ? 0xf7b955 : 0x8bd3ff;
+    const pulse = status === "NORMAL" ? 1 : 1 + Math.sin(time * 8) * 0.18 + 0.22;
+    node.visible = active;
+    node.scale.setScalar(node.userData.id === "operator-proximity" && mode.stop ? pulse * 1.25 : pulse);
+    node.userData.beacon.material.color.setHex(color);
+    node.userData.ring.material.color.setHex(color);
+    node.userData.beacon.material.opacity = active ? 0.88 : 0.35;
+    node.userData.ring.material.opacity = status === "NORMAL" ? 0.45 : 0.78;
+  });
 }
 
 function updateZones(distance, mode) {
