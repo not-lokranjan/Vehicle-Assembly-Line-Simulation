@@ -59,6 +59,10 @@
             <button id="pauseBtn" type="button">Pause</button>
             <button id="resetBtn" type="button">Reset</button>
           </div>
+
+          <button id="openConsoleBtn" class="analyticsButton" type="button">
+            Analytics Console
+          </button>
         </section>
 
         <section class="metrics" aria-label="Simulation metrics">
@@ -100,8 +104,8 @@
         </div>
       </section>
 
-      <aside class="intelligenceConsole" id="intelligenceConsole" aria-label="Smart Factory Intelligence Console">
-        <button class="consoleToggle" id="consoleToggle" type="button" aria-expanded="true">
+      <aside class="intelligenceConsole" id="intelligenceConsole" aria-label="Smart Factory Intelligence Console" aria-hidden="true">
+        <button class="consoleToggle" id="consoleToggle" type="button" aria-expanded="false" aria-label="Close analytics console">
           <span>SMART FACTORY INTELLIGENCE CONSOLE</span>
         </button>
         <div class="consoleInner">
@@ -124,6 +128,6 @@
       </aside>
     </main>
 
-    <script type="module" src="./main.js?v=23"></script>
+    <script type="module" src="./main.js?v=24"></script>
   </body>
 </html>
