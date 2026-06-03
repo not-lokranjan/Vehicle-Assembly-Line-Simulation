@@ -48,3 +48,16 @@ Use browser screenshots for figures. Suggested views:
 ## Notes
 
 This is an illustrative browser simulation, not a validated physics model. For a paper, describe it as a visualization/prototype unless you add calibrated robot kinematics, cycle-time data, and empirical validation.
+
+## Smart Manufacturing Digital Twin Features
+
+- ROS 2-style topic mapping for simulated factory telemetry, including `/joint_states`, operator proximity, line state, weld temperature, chassis load, and inspection defect probability.
+- Isaac Sim-ready conceptual architecture showing how a deployable digital twin could exchange robot-state and sensor data through a ROS 2 bridge.
+- Simulated real-time sensor telemetry with bounded history buffers, status thresholds, event logging, and a Digital Twin demo-mode interface.
+- AI-assisted dynamic task scheduling that preserves the logical manufacturing sequence while modeling safety-stop recovery, bottlenecks, quality prioritization, and maintenance windows.
+- Predictive-maintenance indicators with model-based health score, estimated remaining useful life, service priority, likely contributing factors, and recommended maintenance windows.
+- OEE-style analytics for availability, performance, quality estimate, throughput, cycle time, utilization, energy estimate, defect risk, safety stops, and bottleneck status.
+- 3D sensor nodes for vibration, weld temperature, paint environment, chassis load, inspection vision, and operator proximity. Sensor beacons can be shown or hidden from the sidebar.
+- Digital Twin demo disclaimer and clear labels for `DIGITAL TWIN DEMO MODE`, `SIMULATED TELEMETRY`, `ROS 2 CONCEPTUAL MODEL`, `ISAAC SIM-READY ARCHITECTURE`, and `MODEL-BASED ESTIMATE`.
+
+This remains an illustrative browser-based prototype. Telemetry values, AI scheduling outputs, predictive-maintenance indicators, and analytics are simulated model outputs for demonstration and research communication. They are not measurements from a deployed factory and are not a substitute for calibrated industrial validation.
