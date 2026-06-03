@@ -30,17 +30,17 @@ export function initIntelligenceConsole({ getSnapshot, ui, onSensorStatus }) {
   let showAllSensors = false;
   let selectedSensor = "operator-proximity";
   let selectedRobot = "chassis-marriage";
+  let isOpen = false;
   let twinState = twin.getState(getSnapshot());
   let schedulerState = scheduler.getState(getSnapshot(), true);
   let maintenanceState = maintenance.getState();
   let analyticsState = analytics.update(getSnapshot(), twinState, schedulerState, maintenanceState);
 
   toggle.addEventListener("click", () => {
-    root.classList.toggle("collapsed");
-    root.classList.toggle("open");
-    const expanded = !root.classList.contains("collapsed");
-    toggle.setAttribute("aria-expanded", String(expanded));
+    closeConsole();
   });
+
+  ui.openConsole.addEventListener("click", openConsole);
 
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -68,22 +68,22 @@ export function initIntelligenceConsole({ getSnapshot, ui, onSensorStatus }) {
     twinState = twin.sample(getSnapshot());
     onSensorStatus?.(twinState.sensors);
     updateLeftState();
-    if (activeTab === "digitalTwin" || activeTab === "ros") render();
+    if (isOpen && (activeTab === "digitalTwin" || activeTab === "ros")) render();
   }, 250);
 
   const analyticsTimer = setInterval(() => {
     analyticsState = analytics.update(getSnapshot(), twinState, schedulerState, maintenanceState);
-    if (activeTab === "analytics") render();
+    if (isOpen && activeTab === "analytics") render();
   }, 750);
 
   const schedulerTimer = setInterval(() => {
     schedulerState = scheduler.update(getSnapshot(), twinState, ui.enableAi.checked);
-    if (activeTab === "scheduler") render();
+    if (isOpen && activeTab === "scheduler") render();
   }, 1000);
 
   const maintenanceTimer = setInterval(() => {
     maintenanceState = maintenance.update(getSnapshot(), twinState);
-    if (activeTab === "maintenance" || activeTab === "analytics") render();
+    if (isOpen && (activeTab === "maintenance" || activeTab === "analytics")) render();
   }, 1500);
 
   function reset() {
@@ -97,7 +97,23 @@ export function initIntelligenceConsole({ getSnapshot, ui, onSensorStatus }) {
     maintenanceState = maintenance.getState();
     analyticsState = analytics.update(snapshot, twinState, schedulerState, maintenanceState);
     updateLeftState();
+    if (isOpen) render();
+  }
+
+  function openConsole() {
+    isOpen = true;
+    root.classList.add("open");
+    root.setAttribute("aria-hidden", "false");
+    toggle.setAttribute("aria-expanded", "true");
     render();
+  }
+
+  function closeConsole() {
+    isOpen = false;
+    root.classList.remove("open");
+    root.setAttribute("aria-hidden", "true");
+    toggle.setAttribute("aria-expanded", "false");
+    content.innerHTML = "";
   }
 
   function updateLeftState() {
@@ -115,7 +131,6 @@ export function initIntelligenceConsole({ getSnapshot, ui, onSensorStatus }) {
     if (activeTab === "analytics") content.innerHTML = renderAnalytics();
   }
 
-  render();
   updateLeftState();
 
   return {
