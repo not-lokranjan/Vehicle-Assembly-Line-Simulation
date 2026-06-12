@@ -2,13 +2,11 @@
 
 Browser-based simulation for a paper/demo on collaborative robots managing a car manufacturing process from stamped parts through final quality inspection.
 
-## Run
+## Website
 
-```bash
-python3 -m http.server 4173
-```
+Open the live simulation:
 
-Open `http://localhost:4173`.
+[Vehicle Assembly Line Simulation](https://not-lokranjan.github.io/Vehicle-Assembly-Line-Simulation/)
 
 ## What It Shows
 
